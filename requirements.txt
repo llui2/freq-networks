@@ -1,0 +1,6 @@
+cect==0.3.1
+matplotlib>=3.10
+networkx>=3.5
+numpy>=2.0
+scipy>=1.15
+jupyter>=1.1
