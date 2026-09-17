@@ -1,4 +1,4 @@
-"""Figure 1: edge spectral fingerprints on a barbell graph."""
+"""Figure 1: frequency-resolved edge roles in a hierarchical network."""
 
 from pathlib import Path
 
@@ -7,225 +7,149 @@ import networkx as nx
 import numpy as np
 
 
-red = "#D62728"
-blue = "#1F77B4"
-grey = "#B7B7B7"
-dark = "#222222"
+navy = "#132A8A"
+orange = "#E07A1F"
+red = "#C92A2A"
+grey = "#C9C9C9"
+dark = "#202020"
 
-plt.rc("font", family="Times", size=11)
+plt.rc("font", family="serif", serif=["Times New Roman", "Times", "Nimbus Roman", "DejaVu Serif"], size=10)
 plt.rc("mathtext", fontset="cm")
 
 
-CLIQUE_SIZE = 8
-ETA_FRACTION = 0.035
-POINTS = 700
+GROUP_SIZE = 15
+P_WITHIN = 0.55
+P_MIDDLE = 0.08
+P_OUTER = 0.015
+SEED = 190
+ETA_FRACTION = 0.03
+TOP_FRACTION = 0.05
+FREQUENCIES = [0.05, 0.15, 0.45]
+COLORS = [navy, orange, red]
 
 
-def eigensystem(graph):
+def sample_graph():
+    probabilities = np.full((4, 4), P_OUTER)
+    np.fill_diagonal(probabilities, P_WITHIN)
+    probabilities[0, 1] = probabilities[1, 0] = P_MIDDLE
+    probabilities[2, 3] = probabilities[3, 2] = P_MIDDLE
+    return nx.stochastic_block_model(
+        [GROUP_SIZE] * 4,
+        probabilities,
+        seed=SEED,
+    )
+
+
+def fixed_layout(graph):
+    centers = [-1.82, -0.84, 0.84, 1.82]
+    position = {}
+    for block in range(4):
+        nodes = [
+            node
+            for node in graph.nodes()
+            if graph.nodes[node]["block"] == block
+        ]
+        angles = np.linspace(0, 2 * np.pi, len(nodes), endpoint=False)
+        angles += 0.28 * (block % 2)
+        for node, angle in zip(nodes, angles):
+            position[node] = (
+                centers[block] + 0.27 * np.cos(angle),
+                0.52 * np.sin(angle),
+            )
+    return position
+
+
+def edge_scores(graph, frequencies):
     nodes = list(graph.nodes())
-    adjacency = nx.to_numpy_array(graph, nodelist=nodes, weight="weight")
+    index = {node: i for i, node in enumerate(nodes)}
+    adjacency = nx.to_numpy_array(graph, nodelist=nodes)
     laplacian = np.diag(adjacency.sum(axis=1)) - adjacency
     eigenvalues, eigenvectors = np.linalg.eigh(laplacian)
-    return nodes, laplacian, eigenvalues, eigenvectors
+    lambda_max = eigenvalues[-1]
+    eta = ETA_FRACTION * lambda_max
+
+    edges = list(graph.edges())
+    scores = np.zeros((len(edges), len(frequencies)))
+    for edge_index, (u, v) in enumerate(edges):
+        incidence = np.zeros(len(nodes))
+        incidence[index[u]] = 1.0
+        incidence[index[v]] = -1.0
+        coefficients = eigenvectors.T @ incidence
+        for frequency_index, frequency in enumerate(frequencies):
+            omega = frequency * lambda_max
+            scores[edge_index, frequency_index] = (
+                eta
+                / np.pi
+                * np.sum(
+                    coefficients**2
+                    / ((eigenvalues - omega) ** 2 + eta**2)
+                )
+            )
+    return edges, scores
 
 
-def edge_density(edge, nodes, eigenvalues, eigenvectors, omega, eta):
-    index = {node: i for i, node in enumerate(nodes)}
-    u, v = edge
-    incidence = np.zeros(len(nodes))
-    incidence[index[u]] = 1.0
-    incidence[index[v]] = -1.0
-    coefficients = eigenvectors.T @ incidence
+graph = sample_graph()
+position = fixed_layout(graph)
+edges, scores = edge_scores(graph, FREQUENCIES)
 
-    return (
-        eta
-        / np.pi
-        * np.sum(
-            coefficients[:, None] ** 2
-            / (
-                (eigenvalues[:, None] - omega[None, :]) ** 2
-                + eta**2
-            ),
-            axis=0,
-        )
+fig, axes = plt.subplots(1, 3, figsize=(6.8, 2.55))
+
+for panel, (ax, frequency, color) in enumerate(
+    zip(axes, FREQUENCIES, COLORS)
+):
+    nx.draw_networkx_edges(
+        graph,
+        position,
+        edgelist=edges,
+        edge_color=grey,
+        width=0.35,
+        alpha=0.28,
+        ax=ax,
     )
 
+    values = scores[:, panel]
+    number = max(1, int(round(TOP_FRACTION * len(edges))))
+    selected_indices = np.argpartition(values, -number)[-number:]
+    selected_edges = [edges[index] for index in selected_indices]
+    selected_values = values[selected_indices]
+    low = selected_values.min()
+    high = selected_values.max()
+    scale = (selected_values - low) / max(high - low, 1e-14)
+    widths = 1.1 + 1.9 * scale
 
-graph = nx.barbell_graph(CLIQUE_SIZE, 0)
-bridge = (CLIQUE_SIZE - 1, CLIQUE_SIZE)
-
-nodes, laplacian, eigenvalues, eigenvectors = eigensystem(graph)
-lambda_max = eigenvalues[-1]
-eta = ETA_FRACTION * lambda_max
-omega = np.linspace(0.0, lambda_max, POINTS)
-
-bridge_density = edge_density(
-    bridge,
-    nodes,
-    eigenvalues,
-    eigenvectors,
-    omega,
-    eta,
-)
-
-internal_edges = [
-    edge
-    for edge in graph.edges()
-    if tuple(sorted(edge)) != bridge
-]
-internal_density = np.mean(
-    [
-        edge_density(
-            edge,
-            nodes,
-            eigenvalues,
-            eigenvectors,
-            omega,
-            eta,
-        )
-        for edge in internal_edges
-    ],
-    axis=0,
-)
-
-
-fig, (ax_a, ax_b) = plt.subplots(
-    1,
-    2,
-    figsize=(6.6, 2.65),
-    gridspec_kw={"width_ratios": [0.86, 1.30]},
-)
-
-
-# ---------------------------------------------------------------------------
-# A. Graph
-# ---------------------------------------------------------------------------
-
-angles = np.linspace(
-    np.pi / 2 + 0.40,
-    np.pi / 2 + 0.40 + 2 * np.pi,
-    CLIQUE_SIZE,
-    endpoint=False,
-)
-position = {}
-for i, angle in enumerate(angles):
-    position[i] = (-1.15 + 0.55 * np.cos(angle), 0.55 * np.sin(angle))
-    position[CLIQUE_SIZE + i] = (
-        1.15 - 0.55 * np.cos(angle),
-        0.55 * np.sin(angle),
+    nx.draw_networkx_edges(
+        graph,
+        position,
+        edgelist=selected_edges,
+        edge_color=color,
+        width=widths,
+        alpha=0.92,
+        ax=ax,
+    )
+    nx.draw_networkx_nodes(
+        graph,
+        position,
+        node_size=24,
+        node_color="white",
+        edgecolors=dark,
+        linewidths=0.65,
+        ax=ax,
     )
 
-internal_left = [
-    edge
-    for edge in graph.edges()
-    if edge[0] < CLIQUE_SIZE and edge != bridge
-]
-internal_right = [
-    edge
-    for edge in graph.edges()
-    if edge[0] >= CLIQUE_SIZE and edge != bridge
-]
-
-nx.draw_networkx_edges(
-    graph,
-    position,
-    edgelist=internal_left + internal_right,
-    ax=ax_a,
-    edge_color=grey,
-    width=0.65,
-    alpha=0.7,
-)
-nx.draw_networkx_edges(
-    graph,
-    position,
-    edgelist=[bridge],
-    ax=ax_a,
-    edge_color=red,
-    width=2.3,
-)
-nx.draw_networkx_nodes(
-    graph,
-    position,
-    ax=ax_a,
-    node_size=34,
-    node_color="white",
-    edgecolors=dark,
-    linewidths=0.85,
-)
-
-ax_a.text(
-    0.50,
-    0.04,
-    "bridge edge",
-    color=red,
-    fontsize=9,
-    ha="center",
-    va="bottom",
-    transform=ax_a.transAxes,
-)
-ax_a.set_xlim(-2.0, 2.0)
-ax_a.set_ylim(-0.95, 0.95)
-ax_a.set_axis_off()
-
-
-# ---------------------------------------------------------------------------
-# B. Edge spectral density
-# ---------------------------------------------------------------------------
-
-x = omega / lambda_max
-
-ax_b.plot(
-    x,
-    bridge_density,
-    color=red,
-    linewidth=1.8,
-    label="bridge edge",
-)
-ax_b.plot(
-    x,
-    internal_density,
-    color=blue,
-    linewidth=1.8,
-    label="within-clique edges",
-)
-
-positive_eigenvalues = eigenvalues[eigenvalues > 1e-10] / lambda_max
-rug_y = 2.9e-3
-for value in positive_eigenvalues:
-    ax_b.plot(
-        [value, value],
-        [rug_y, 1.35 * rug_y],
-        color="black",
-        linewidth=0.55,
-        alpha=0.38,
-        clip_on=False,
+    ax.set_title(
+        rf"$\Omega/\lambda_{{\max}}={frequency:.2f}$",
+        fontsize=10,
+        pad=4,
     )
-
-ax_b.set_yscale("log")
-ax_b.set_xlim(0.0, 1.0)
-ax_b.set_ylim(2.7e-3, 3.2)
-ax_b.set_xticks([0.0, 0.25, 0.5, 0.75, 1.0])
-ax_b.set_xlabel(r"$\Omega/\lambda_{\max}$")
-ax_b.set_ylabel(r"$\rho_e(\Omega,\eta)$")
-ax_b.tick_params(direction="in", top=True, right=True)
-ax_b.legend(
-    loc="upper center",
-    fontsize=8.5,
-    frameon=False,
-    ncol=1,
-)
-ax_b.spines["top"].set_linewidth(0.8)
-ax_b.spines["right"].set_linewidth(0.8)
-ax_b.spines["left"].set_linewidth(0.8)
-ax_b.spines["bottom"].set_linewidth(0.8)
-
-
-for label, ax in zip(("a", "b"), (ax_a, ax_b)):
+    ax.set_xlim(-2.23, 2.23)
+    ax.set_ylim(-0.78, 0.78)
+    ax.set_aspect("equal")
+    ax.set_axis_off()
     ax.text(
-        -0.03,
-        1.01,
-        label,
-        fontsize=13,
+        -0.02,
+        1.02,
+        chr(ord("a") + panel),
+        fontsize=12,
         fontweight="bold",
         ha="left",
         va="bottom",
@@ -233,19 +157,26 @@ for label, ax in zip(("a", "b"), (ax_a, ax_b)):
         fontname="DejaVu Sans",
     )
 
-
 fig.subplots_adjust(
-    left=0.035,
-    right=0.985,
-    bottom=0.21,
-    top=0.94,
-    wspace=0.27,
+    left=0.015,
+    right=0.995,
+    bottom=0.03,
+    top=0.86,
+    wspace=0.07,
 )
 
 root = Path(__file__).resolve().parents[1]
 figure_dir = root / "paper" / "figures"
 figure_dir.mkdir(parents=True, exist_ok=True)
-
-fig.savefig(figure_dir / "fig1_edge_spectra.pdf")
-fig.savefig(figure_dir / "fig1_edge_spectra.png", dpi=300)
+fig.savefig(
+    figure_dir / "fig1_edge_spectra.pdf",
+    bbox_inches="tight",
+    pad_inches=0.02,
+)
+fig.savefig(
+    figure_dir / "fig1_edge_spectra.png",
+    dpi=300,
+    bbox_inches="tight",
+    pad_inches=0.02,
+)
 print(f"Saved figure to {figure_dir / 'fig1_edge_spectra.pdf'}")
