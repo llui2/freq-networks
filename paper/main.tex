@@ -121,7 +121,7 @@ Therefore, when evaluated at the endpoints of an edge, the frequency-resolved di
 \begin{figure}[H]
 \centering
 \includegraphics[width=\linewidth]{fig1_edge_spectra.pdf}
-\caption{Frequency-resolved edge importance in one realization of a hierarchical stochastic block model. The network contains four groups, arranged into two supergroups, with $p_{\rm in}=0.55$, $p_{\rm mid}=0.08$, and $p_{\rm out}=0.015$. Each panel highlights the $5\%$ of edges with largest $\rho_e(\Omega,\eta)$ for the indicated frequency, with $\eta=0.03\lambda_{\max}$. Low frequencies select mainly edges between supergroups, intermediate frequencies select edges between groups inside a supergroup, and higher frequencies select edges inside the groups.}
+\caption{Frequency-resolved edge importance in one realization of a hierarchical stochastic block model. The network contains four groups arranged into two supergroups, with $p_{\rm in}=0.55$, $p_{\rm mid}=0.08$, and $p_{\rm out}=0.015$. Each panel highlights the $10\%$ of edges with largest $\rho_e(\Omega,\eta)$ at one of the three class-enrichment maxima identified in Fig.~\ref{fig:hierarchy}, with $\eta=0.03\lambda_{\max}$. Colors indicate the structural edge class. Low frequencies are dominated by edges between supergroups, intermediate frequencies by edges joining groups inside the same supergroup, and high frequencies by edges within groups.}
 \label{fig:edge-spectra}
 \end{figure}
 
@@ -209,12 +209,27 @@ The narrow-band limit is also well defined when an eigenvalue is degenerate. Let
 \end{equation}
 The right-hand side is the spectral weight of the edge-incidence direction in that eigenspace. Therefore, the contribution of an edge to a particular graph frequency can be defined without choosing an arbitrary basis inside a degenerate eigenspace.
 
-Figure~\ref{fig:hierarchy} quantifies this separation over an ensemble of hierarchical networks. For each frequency we compare the mean edge density of a structural class with the mean over all edges. Values above one indicate that the corresponding class is overrepresented around that part of the spectrum.
+For a structural edge class $E_c$, define its fraction of the total frequency-resolved sensitivity by
+\begin{equation}
+Q_c(\Omega,\eta)
+=
+\frac{\displaystyle\sum_{e\in E_c} C_e(\Omega,\eta)}
+{\displaystyle\sum_{e\in E} C_e(\Omega,\eta)}.
+\label{eq:class-share}
+\end{equation}
+For the unweighted networks considered below, the neutral share expected from the number of edges is $f_c=|E_c|/|E|$. We therefore also define the enrichment
+\begin{equation}
+R_c(\Omega,\eta)
+=
+\frac{Q_c(\Omega,\eta)}{f_c}.
+\label{eq:class-enrichment}
+\end{equation}
+Values $R_c>1$ indicate that a class carries more spectral sensitivity than expected from its abundance.
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.72\linewidth]{fig2_hierarchy.pdf}
-\caption{Mean spectral-density enrichment of three structural edge classes over $50$ independent realizations of the hierarchical stochastic block model used in Fig.~\ref{fig:edge-spectra}. Shaded regions show one standard error of the mean and the dashed line marks the network average. Edges connecting the two supergroups are concentrated at the lowest frequencies, while edges joining groups inside a supergroup peak at a higher spectral scale.}
+\includegraphics[width=0.82\linewidth]{fig2_hierarchy.pdf}
+\caption{Decomposition of spectral sensitivity by structural edge class over $50$ independent realizations of the hierarchical stochastic block model used in Fig.~\ref{fig:edge-spectra}. (a) Mean class share $Q_c(\Omega)$ of the total edge sensitivity. (b) Mean enrichment $R_c(\Omega)$ relative to the fraction of edges in each class; shaded regions show one standard error of the mean and the horizontal dashed line marks $R_c=1$. The colored vertical lines indicate the three enrichment maxima used in Fig.~\ref{fig:edge-spectra}. The rare edges joining different supergroups are strongly enriched at the lowest frequencies, edges joining groups inside one supergroup peak at an intermediate frequency, and within-group edges dominate the high-frequency sensitivity.}
 \label{fig:hierarchy}
 \end{figure}
 
@@ -260,12 +275,22 @@ N_{\Omega,\eta}(\mathbf{L}-w_e b_e b_e^\intercal)
 \end{equation}
 For $w_e>0$, $0<\Delta_e N_{\Omega,\eta}<1$. Equation~\eqref{eq:sensitivity} is recovered by differentiating Eq.~\eqref{eq:finite-shift} at $t=0$. In the limit $\eta\downarrow0$, Eq.~\eqref{eq:finite-shift} reduces to the rank-one spectral shift of the eigenvalue-counting function. Therefore, the same construction gives both an infinitesimal sensitivity and an exact finite edge-removal quantity.
 
+The sensitivity also provides an edge ranking for a prescribed spectral target. To test whether this remains useful beyond an infinitesimal perturbation, we weaken the $5\%$ highest-ranked edges by $25\%$ and measure the resulting finite change of $N_{\Omega_0,\eta}$ at the target frequency $\Omega_0$. We compare the ranking by $C_e(\Omega_0,\eta)$ with two static low-frequency rankings,
+\begin{equation}
+r_e=b_e^\intercal\mathbf{L}^+b_e,
+\qquad
+b_e^\intercal(\mathbf{L}^+)^2b_e,
+\end{equation}
+corresponding to effective resistance and the biharmonic score, together with random edge selection.
+
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.70\linewidth]{fig3_shift.pdf}
-\caption{Finite spectral shift produced by deleting a bridge edge and a representative within-clique edge of a barbell graph. Solid curves show Eq.~\eqref{eq:deletion-shift}; open markers are obtained by explicitly deleting the edge, recomputing the Laplacian spectrum, and evaluating the smoothed counting function. The direct calculation and the rank-one expression coincide, while the two edge types modify different spectral regions.}
-\label{fig:finite-shift}
+\includegraphics[width=0.72\linewidth]{fig3_targeting.pdf}
+\caption{Finite spectral targeting in the hierarchical stochastic block model. For each of the three target frequencies in Figs.~\ref{fig:edge-spectra} and \ref{fig:hierarchy}, the $5\%$ highest-ranked edges are weakened by $25\%$. Bars show the resulting change of the smoothed count at the target frequency, normalized by the mean change under random edge selection, over $40$ independent realizations; error bars show one standard error of the mean. The frequency-resolved ranking agrees closely with the biharmonic ranking at the lowest target, but retains a strong advantage as the target moves into the interior spectrum, where the static low-frequency rankings progressively lose selectivity.}
+\label{fig:targeting}
 \end{figure}
+
+At the lowest target the frequency-resolved and biharmonic rankings produce nearly the same finite shift, as expected from the low-frequency limit. At the highest target, the frequency-resolved ranking produces a shift about $2.35$ times the random baseline, while effective resistance is close to random and the biharmonic ranking falls below it.
 
 At the bottom of the spectrum, the construction connects with the biharmonic distance. Setting $\Omega=0$ and taking $\eta\downarrow0$ in the unscaled response gives
 \begin{align}
@@ -301,7 +326,7 @@ S_e(\tau\omega^2,\gamma\omega).
 \end{equation}
 Thus the same quantity gives the total steady-state response generated by antisymmetric harmonic forcing across edge $e$. The parameters $\Omega$ and $\eta$ can therefore be interpreted either as spectral-resolution parameters or, for this dynamics, in terms of forcing frequency, inertia, and damping.
 
-The resulting picture is simple. An edge defines a spectral fingerprint $\rho_e(\Omega,\eta)$. The same quantity determines the sensitivity of the spectral count to that edge, admits an exact finite-edge spectral-shift expression, and has a direct interpretation as the response of a forced network. The next question is whether these edge fingerprints identify different structural roles in networks with structure at multiple scales, and whether they provide information that is not captured by low-frequency or diffusion-scale edge measures.
+The resulting picture is simple. An edge defines a spectral fingerprint $\rho_e(\Omega,\eta)$. The same quantity determines the sensitivity of the spectral count to that edge, admits an exact finite-edge spectral-shift expression, and has a direct interpretation as the response of a forced network. In the hierarchical example, these fingerprints separate structural scales and allow a chosen part of the spectrum to be perturbed more selectively than with static low-frequency edge rankings.
 
 \bibliographystyle{unsrtnat}
 \bibliography{refs}
