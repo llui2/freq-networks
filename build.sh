@@ -20,7 +20,7 @@ fi
 
 "$PYTHON" scripts/fig1_edge_spectra.py
 "$PYTHON" scripts/fig2_hierarchy.py
-"$PYTHON" scripts/fig3_shift.py
+"$PYTHON" scripts/fig3_targeting.py
 
 cd paper
 
