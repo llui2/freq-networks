@@ -41,7 +41,12 @@ def sample_graph():
 
 
 def fixed_layout(graph):
-    centers = [-1.82, -0.84, 0.84, 1.82]
+    centers = {
+        0: (-0.72, 0.53),
+        1: (-0.72, -0.53),
+        2: (0.72, 0.53),
+        3: (0.72, -0.53),
+    }
     position = {}
     for block in range(4):
         nodes = [
@@ -50,11 +55,12 @@ def fixed_layout(graph):
             if graph.nodes[node]["block"] == block
         ]
         angles = np.linspace(0, 2 * np.pi, len(nodes), endpoint=False)
-        angles += 0.28 * (block % 2)
+        angles += 0.20 * (block % 2)
+        cx, cy = centers[block]
         for node, angle in zip(nodes, angles):
             position[node] = (
-                centers[block] + 0.27 * np.cos(angle),
-                0.52 * np.sin(angle),
+                cx + 0.24 * np.cos(angle),
+                cy + 0.24 * np.sin(angle),
             )
     return position
 
@@ -92,7 +98,7 @@ graph = sample_graph()
 position = fixed_layout(graph)
 edges, scores = edge_scores(graph, FREQUENCIES)
 
-fig, axes = plt.subplots(1, 3, figsize=(6.8, 2.55))
+fig, axes = plt.subplots(1, 3, figsize=(6.8, 2.35))
 
 for panel, (ax, frequency, color) in enumerate(
     zip(axes, FREQUENCIES, COLORS)
@@ -129,7 +135,7 @@ for panel, (ax, frequency, color) in enumerate(
     nx.draw_networkx_nodes(
         graph,
         position,
-        node_size=24,
+        node_size=23,
         node_color="white",
         edgecolors=dark,
         linewidths=0.65,
@@ -141,8 +147,8 @@ for panel, (ax, frequency, color) in enumerate(
         fontsize=10,
         pad=4,
     )
-    ax.set_xlim(-2.23, 2.23)
-    ax.set_ylim(-0.78, 0.78)
+    ax.set_xlim(-1.13, 1.13)
+    ax.set_ylim(-0.92, 0.92)
     ax.set_aspect("equal")
     ax.set_axis_off()
     ax.text(
