@@ -1,0 +1,278 @@
+\documentclass[11pt,reqno]{amsart}
+
+\usepackage[T1]{fontenc}
+\usepackage{newtxtext,newtxmath}
+\let\Bbbk\relax
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{microtype}
+\usepackage{xcolor}
+\usepackage[numbers]{natbib}
+\usepackage[colorlinks=true,linkcolor=blue,citecolor=blue!60!black,urlcolor=blue!60!black]{hyperref}
+
+\graphicspath{{../figures/}{figures/}}
+\newcommand{\dd}{\,\mathrm d}
+
+\begin{document}
+
+\title{frequency-resolved edge sensitivity}
+%\date{}
+\maketitle
+
+\section{Literature}
+
+Effective resistance and related Laplacian distances emphasize the low-frequency part of the graph spectrum. Biharmonic distance replaces the inverse-eigenvalue weighting of resistance distance by an inverse-square weighting \cite{lipman2010biharmonic}. Li and Zhang \cite{li2018kirchhoff} define edge importance through the change in the Kirchhoff index when an edge is weakened. Yi et al. \cite{yi2018biharmonic} show that the derivative of the Kirchhoff index with respect to an edge resistance is proportional to the squared biharmonic distance between the endpoints of that edge. Black et al. \cite{black2024biharmonic} develop the graph-theoretic properties of biharmonic distance and its higher-order variants and use them for edge centrality and clustering. These constructions are global and spectrally weighted, but their spectral weighting remains anchored at the zero eigenvalue.
+
+More generally, matrix functions provide a standard way to probe different parts of a graph spectrum. Estrada and Higham \cite{estrada2010matrix} develop network measures based on matrix functions, including resolvents. Spectral graph wavelets use filters of the form $g(tL)$ to localize prescribed spectral bands \cite{hammond2011wavelets}. Consequently, the use of a Lorentzian spectral filter or a resolvent is not itself a new construction.
+
+Dong, Benson, and Bindel \cite{dong2019dos} study the density of states of large networks. For a symmetric graph matrix $H$ and an arbitrary vector $u$, the local density of states is the spectral measure
+\begin{equation}
+\mu(\lambda;u)
+=\sum_k |u^\intercal q_k|^2\delta(\lambda-\lambda_k),
+\end{equation}
+which satisfies $\int f(\lambda)\mu(\lambda;u)\dd\lambda=u^\intercal f(H)u$. Taking $u$ to be an edge-incidence vector therefore fits directly inside the existing local-density-of-states formalism. The present point is not to introduce spectral measures, but to use the edge-incidence spectral measure to quantify how individual graph edges control the interior Laplacian spectrum.
+
+Several works are particularly close to this aim. Kazimer et al. \cite{kazimer2024ranking} rank edges by the change in a von Neumann entropy associated with the diffusion operator $e^{-\beta L}$ and show that edge rankings depend strongly on the diffusion timescale $\beta$. Schmidt, Gal\'an, and Thomas \cite{schmidt2018stochastic} derive a power-spectral edge importance for stochastic Markov dynamics, decomposing the temporal power spectrum of a chosen observable into edge contributions. Bravo-Hermsdorff and Gunderson \cite{bravo2019unifying} rank graph-reduction operations through their effect on the Laplacian pseudoinverse. These results establish that edge importance can depend on dynamical scale and on a chosen spectral functional. The distinction pursued here is direct resolution of edge importance around an arbitrary interior Laplacian frequency $\Omega$, without choosing a graph observable or an entropy functional.
+
+Classical spectral-shift theory describes how the spectrum of a self-adjoint operator changes under finite-rank perturbations and expresses the shift through a perturbation determinant \cite{behrndt2018spectral}. An edge-weight change is particularly simple because the graph Laplacian changes by a rank-one matrix. This gives an exact finite-edge formula below, rather than only a first-order eigenvalue perturbation. Finally, oscillatory network models are known to exhibit resonances at Laplacian eigenmodes; Furutani, Takano, and Aida \cite{furutani2019resonance} use this fact to infer network spectral information from forced oscillations. The same resolvent gives a dynamical interpretation of the edge quantity considered here.
+
+\section{Results}
+
+Let $G=(V,E,w)$ be a weighted undirected graph. Choose an arbitrary orientation of each edge and let
+\begin{equation}
+b_e=e_u-e_v
+\end{equation}
+for $e=(u,v)$. The weighted combinatorial Laplacian is
+\begin{equation}
+L=\sum_{e\in E}w_e b_e b_e^\intercal.
+\label{eq:laplacian-incidence}
+\end{equation}
+Write
+\begin{equation}
+L\psi_k=\lambda_k\psi_k,
+\qquad
+0=\lambda_1\leq\lambda_2\leq\cdots\leq\lambda_n.
+\end{equation}
+The question is not whether an edge is important in a single global sense, but which part of the Laplacian spectrum that edge supports.
+
+For a spectral centre $\Omega\in\mathbb R$ and a resolution parameter $\eta>0$, set
+\begin{equation}
+z=\Omega+i\eta
+\end{equation}
+and define the edge Green function
+\begin{equation}
+g_e(z)
+=b_e^\intercal(L-zI)^{-1}b_e.
+\label{eq:edge-green}
+\end{equation}
+Because $b_e\perp\mathbf 1$,
+\begin{equation}
+g_e(z)
+=\sum_{k=2}^n
+\frac{|b_e^\intercal\psi_k|^2}{\lambda_k-z}.
+\end{equation}
+Its imaginary part gives the Lorentzian-smoothed edge spectral density
+\begin{equation}
+\rho_e(\Omega,\eta)
+\defeq
+\frac{1}{\pi}\operatorname{Im}g_e(\Omega+i\eta)
+=
+\frac{\eta}{\pi}
+\sum_{k=2}^n
+\frac{|\psi_k(u)-\psi_k(v)|^2}
+{(\lambda_k-\Omega)^2+\eta^2}.
+\label{eq:edge-density}
+\end{equation}
+Thus $\rho_e$ is exactly the local density of states associated with the incidence vector $b_e$, regularized by the Poisson kernel. Since $\|b_e\|^2=2$,
+\begin{equation}
+\int_{-\infty}^{\infty}
+\rho_e(\Omega,\eta)\dd\Omega=2.
+\label{eq:density-normalization}
+\end{equation}
+Consequently $p_e=\rho_e/2$ is a normalized spectral fingerprint for edge $e$.
+
+The frequency-resolved distance already used in this project is
+\begin{equation}
+d_{\Omega,\eta}^2(i,j)
+=
+\sum_{k=2}^{n}
+\frac{(\psi_k(i)-\psi_k(j))^2}
+{(\lambda_k-\Omega)^2+\eta^2}.
+\label{eq:spectral-distance}
+\end{equation}
+For an existing edge $e=(u,v)$,
+\begin{equation}
+S_e(\Omega,\eta)
+\defeq d_{\Omega,\eta}^2(u,v)
+=\frac{\pi}{\eta}\rho_e(\Omega,\eta).
+\label{eq:response-density}
+\end{equation}
+The distance is therefore not the central object: its value on an edge is a rescaled edge spectral density.
+
+To connect Eq.~\eqref{eq:edge-density} to spectral perturbation, define the smoothed eigenvalue-counting function
+\begin{equation}
+N_{\Omega,\eta}(L)
+=
+\sum_{k=1}^{n}
+F_{\Omega,\eta}(\lambda_k),
+\label{eq:smoothed-count}
+\end{equation}
+where
+\begin{equation}
+F_{\Omega,\eta}(\lambda)
+=
+\frac12+
+\frac{1}{\pi}
+\arctan\!\left(\frac{\Omega-\lambda}{\eta}\right).
+\label{eq:count-filter}
+\end{equation}
+As $\eta\downarrow0$, this approaches the number of Laplacian eigenvalues below $\Omega$, away from eigenvalues exactly equal to $\Omega$.
+
+Consider changing only the weight of edge $e$. From Eq.~\eqref{eq:laplacian-incidence},
+\begin{equation}
+\frac{\partial L}{\partial w_e}=b_e b_e^\intercal.
+\end{equation}
+Since
+\begin{equation}
+F'_{\Omega,\eta}(\lambda)
+=-\frac{\eta}{\pi[(\lambda-\Omega)^2+\eta^2]},
+\end{equation}
+trace differentiation gives the exact infinitesimal identity
+\begin{equation}
+\boxed{
+-\frac{\partial N_{\Omega,\eta}}{\partial w_e}
+=\rho_e(\Omega,\eta).
+}
+\label{eq:sensitivity}
+\end{equation}
+Equivalently,
+\begin{equation}
+\boxed{
+-\frac{\partial N_{\Omega,\eta}}{\partial\log w_e}
+=w_e\rho_e(\Omega,\eta).
+}
+\label{eq:log-sensitivity}
+\end{equation}
+This motivates the dimensionless frequency-resolved edge importance
+\begin{equation}
+C_e(\Omega,\eta)
+\defeq w_e\rho_e(\Omega,\eta).
+\label{eq:centrality}
+\end{equation}
+It measures the sensitivity of the smoothed spectral count near $\Omega$ to a fractional change in the edge weight.
+
+Summing Eq.~\eqref{eq:centrality} over the edges gives
+\begin{align}
+\sum_{e\in E}C_e(\Omega,\eta)
+&=
+\frac{\eta}{\pi}
+\sum_{k=2}^n
+\frac{
+\sum_e w_e|b_e^\intercal\psi_k|^2
+}
+{(\lambda_k-\Omega)^2+\eta^2}\\
+&=
+\boxed{
+\frac{\eta}{\pi}
+\sum_{k=2}^n
+\frac{\lambda_k}
+{(\lambda_k-\Omega)^2+\eta^2}
+}.
+\label{eq:sum-rule}
+\end{align}
+Thus the total frequency-resolved importance is fixed by the Laplacian spectrum, while $C_e$ decomposes that total among individual edges.
+
+The narrow-band limit is basis independent even at a repeated eigenvalue. If $P_{\lambda_*}$ is the orthogonal projector onto the eigenspace with eigenvalue $\lambda_*$, then
+\begin{equation}
+\boxed{
+\lim_{\eta\downarrow0}
+\pi\eta\,\rho_e(\lambda_*,\eta)
+=b_e^\intercal P_{\lambda_*}b_e.
+}
+\label{eq:narrow-band}
+\end{equation}
+The right-hand side is the fraction of the edge-incidence direction carried by that eigenspace. This gives a direct meaning to which edges support an individual graph frequency without selecting an arbitrary basis inside a degenerate eigenspace.
+
+The rank-one form of an edge perturbation also gives an exact finite formula. Let
+\begin{equation}
+L_t=L+t b_e b_e^\intercal,
+\qquad t\geq-w_e,
+\label{eq:rank-one-update}
+\end{equation}
+so that $t=-w_e$ deletes the edge and $t>0$ strengthens it. The matrix determinant lemma gives
+\begin{equation}
+\det(L_t-zI)
+=
+\det(L-zI)
+\left[1+t g_e(z)\right].
+\label{eq:determinant-lemma}
+\end{equation}
+For real $\lambda$ and $z=\Omega+i\eta$,
+\begin{equation}
+F_{\Omega,\eta}(\lambda)
+=-\frac{1}{\pi}\arg(\lambda-z),
+\end{equation}
+using the branch with $\arg(\lambda-z)\in(-\pi,0)$. It follows that
+\begin{equation}
+\boxed{
+N_{\Omega,\eta}(L_t)-N_{\Omega,\eta}(L)
+=
+-\frac{1}{\pi}
+\arg\left[1+t g_e(\Omega+i\eta)\right].
+}
+\label{eq:finite-shift}
+\end{equation}
+For deletion,
+\begin{equation}
+\Delta_e N_{\Omega,\eta}
+=
+N_{\Omega,\eta}(L-w_e b_e b_e^\intercal)
+-N_{\Omega,\eta}(L)
+=
+-\frac{1}{\pi}
+\arg\left[1-w_e g_e(\Omega+i\eta)\right],
+\label{eq:deletion-shift}
+\end{equation}
+with $0<\Delta_e N_{\Omega,\eta}<1$ for $w_e>0$. Equation~\eqref{eq:sensitivity} is recovered by differentiating Eq.~\eqref{eq:finite-shift} at $t=0$. In the limit $\eta\downarrow0$, Eq.~\eqref{eq:finite-shift} becomes the rank-one spectral shift of the eigenvalue-counting function. This provides a finite edge-removal quantity rather than only a perturbative ranking.
+
+At the bottom of the spectrum the construction connects to biharmonic distance. Setting $\Omega=0$ and taking $\eta\downarrow0$ in the unscaled response gives
+\begin{align}
+S_e(0,0)
+&=
+\sum_{k=2}^n
+\frac{|b_e^\intercal\psi_k|^2}{\lambda_k^2}\\
+&=
+b_e^\intercal(L^+)^2b_e
+=d_B^2(u,v),
+\label{eq:biharmonic-limit}
+\end{align}
+where $d_B$ is the graph biharmonic distance. The biharmonic-distance-related edge centrality of Yi et al. \cite{yi2018biharmonic} is therefore proportional to $w_e^2S_e(0,0)$. The present construction extends this low-frequency quantity into a continuously resolved profile across the interior spectrum.
+
+There is also a direct dynamical interpretation. Consider the forced damped network
+\begin{equation}
+\tau\ddot x+\gamma\dot x+Lx
+=b_e e^{i\omega t}.
+\label{eq:forced-system}
+\end{equation}
+With $x(t)=\hat x e^{i\omega t}$,
+\begin{equation}
+\hat x
+=
+\left(L-\tau\omega^2 I+i\gamma\omega I\right)^{-1}b_e.
+\end{equation}
+Hence
+\begin{equation}
+\|\hat x\|_2^2
+=
+S_e(\tau\omega^2,\gamma\omega).
+\label{eq:dynamical-response}
+\end{equation}
+Thus the same quantity is the total steady-state response energy generated by antisymmetric harmonic forcing across edge $e$. The parameters $\Omega$ and $\eta$ may therefore be regarded either as spectral-resolution parameters or, for this dynamics, as combinations of forcing frequency, inertia, and damping.
+
+The resulting story is intentionally narrow. General graph filters, resolvents, local densities of states, and frequency-dependent dynamical edge measures already exist. The proposed contribution is the identification of the incidence-vector spectral density as an edge-resolved decomposition of the interior Laplacian spectrum, together with its exact interpretations as a spectral-count sensitivity, a finite rank-one spectral shift, and a resonant edge response. The numerical question is then whether these spectral fingerprints separate structurally distinct classes of edges in multiscale networks in a way that low-frequency or diffusion-scale edge scores do not.
+
+\bibliographystyle{unsrtnat}
+\bibliography{refs}
+
+\end{document}
