@@ -118,6 +118,13 @@ S_e(\Omega,\eta)
 \end{equation}
 Therefore, when evaluated at the endpoints of an edge, the frequency-resolved distance is simply a rescaled edge spectral density.
 
+\begin{figure}[H]
+\centering
+\includegraphics[width=\linewidth]{fig1_edge_spectra.pdf}
+\caption{Edge spectral fingerprints in a barbell graph. (a) Two cliques connected by a single bridge edge. (b) Smoothed edge spectral density for the bridge and for the mean over within-clique edges, with $\eta=0.035\lambda_{\max}$. Short marks along the horizontal axis indicate the nonzero Laplacian eigenvalues. The two edge classes place their spectral weight in different parts of the spectrum.}
+\label{fig:edge-spectra}
+\end{figure}
+
 To connect Eq.~\eqref{eq:edge-density} with a direct perturbation of the network, define the smoothed eigenvalue-counting function
 \begin{equation}
 N_{\Omega,\eta}(\mathbf{L})
@@ -202,6 +209,15 @@ The narrow-band limit is also well defined when an eigenvalue is degenerate. Let
 \end{equation}
 The right-hand side is the spectral weight of the edge-incidence direction in that eigenspace. Therefore, the contribution of an edge to a particular graph frequency can be defined without choosing an arbitrary basis inside a degenerate eigenspace.
 
+Figure~\ref{fig:hierarchy} shows the same quantity in a network with two structural scales. For each frequency we compare the mean edge density of a structural class with the mean over all edges. Values above one indicate that the corresponding class is overrepresented around that part of the spectrum.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\linewidth]{fig2_hierarchy.pdf}
+\caption{Frequency-dependent structural role in a hierarchical stochastic block model. (a) Representative network with within-group edges in gray, edges joining groups inside the same supergroup in orange, and edges joining different supergroups in green. (b) Mean spectral-density enrichment of the three edge classes over $30$ independent realizations. Shaded regions show one standard deviation and the dashed line marks the network average. Different structural edge classes are selected at different parts of the spectrum.}
+\label{fig:hierarchy}
+\end{figure}
+
 The rank-one structure of an edge perturbation also gives an exact expression for a finite change. Let
 \begin{equation}
 \mathbf{L}_t=\mathbf{L}+t b_e b_e^\intercal,
@@ -243,6 +259,13 @@ N_{\Omega,\eta}(\mathbf{L}-w_e b_e b_e^\intercal)
 \label{eq:deletion-shift}
 \end{equation}
 For $w_e>0$, $0<\Delta_e N_{\Omega,\eta}<1$. Equation~\eqref{eq:sensitivity} is recovered by differentiating Eq.~\eqref{eq:finite-shift} at $t=0$. In the limit $\eta\downarrow0$, Eq.~\eqref{eq:finite-shift} reduces to the rank-one spectral shift of the eigenvalue-counting function. Therefore, the same construction gives both an infinitesimal sensitivity and an exact finite edge-removal quantity.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.70\linewidth]{fig3_shift.pdf}
+\caption{Finite spectral shift produced by deleting two edges of the barbell graph in Fig.~\ref{fig:edge-spectra}. Solid curves show Eq.~\eqref{eq:deletion-shift}; open markers are obtained by explicitly deleting the edge, recomputing the Laplacian spectrum, and evaluating the smoothed counting function. The bridge and a representative within-clique edge modify different spectral regions.}
+\label{fig:finite-shift}
+\end{figure}
 
 At the bottom of the spectrum, the construction connects with the biharmonic distance. Setting $\Omega=0$ and taking $\eta\downarrow0$ in the unscaled response gives
 \begin{align}
