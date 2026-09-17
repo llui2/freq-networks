@@ -1,4 +1,4 @@
-"""Figure 2: spectral enrichment of edge classes in a hierarchical SBM."""
+"""Figure 2: ensemble spectral enrichment of hierarchical edge classes."""
 
 from pathlib import Path
 
@@ -7,24 +7,22 @@ import networkx as nx
 import numpy as np
 
 
-blue = "#1F77B4"
-orange = "#FF7F0E"
-green = "#2CA02C"
-grey = "#C4C4C4"
-dark = "#222222"
+blue = "#245A9A"
+orange = "#E07A1F"
+green = "#238B45"
 
-plt.rc("font", family="Times", size=11)
+plt.rc("font", family="serif", serif=["Times New Roman", "Times", "Nimbus Roman", "DejaVu Serif"], size=10)
 plt.rc("mathtext", fontset="cm")
 
 
-GROUP_SIZE = 20
-P_WITHIN = 0.45
-P_MIDDLE = 0.10
-P_OUTER = 0.025
-REALIZATIONS = 30
-ETA_FRACTION = 0.035
-POINTS = 320
-SEED = 7
+GROUP_SIZE = 15
+P_WITHIN = 0.55
+P_MIDDLE = 0.08
+P_OUTER = 0.015
+REALIZATIONS = 50
+ETA_FRACTION = 0.03
+POINTS = 260
+MAX_FREQUENCY = 0.55
 
 
 def edge_class(block_u, block_v):
@@ -36,14 +34,13 @@ def edge_class(block_u, block_v):
 
 
 def sample_graph(seed):
-    sizes = [GROUP_SIZE] * 4
     probabilities = np.full((4, 4), P_OUTER)
     np.fill_diagonal(probabilities, P_WITHIN)
     probabilities[0, 1] = probabilities[1, 0] = P_MIDDLE
     probabilities[2, 3] = probabilities[3, 2] = P_MIDDLE
 
     graph = nx.stochastic_block_model(
-        sizes,
+        [GROUP_SIZE] * 4,
         probabilities,
         seed=seed,
     )
@@ -65,13 +62,12 @@ def class_enrichment(graph, block, omega_scaled):
     index = {node: i for i, node in enumerate(nodes)}
     adjacency = nx.to_numpy_array(graph, nodelist=nodes)
     laplacian = np.diag(adjacency.sum(axis=1)) - adjacency
-
     eigenvalues, eigenvectors = np.linalg.eigh(laplacian)
     lambda_max = eigenvalues[-1]
     eta = ETA_FRACTION * lambda_max
     omega = omega_scaled * lambda_max
 
-    class_profiles = {
+    profiles = {
         "within group": [],
         "between groups": [],
         "between supergroups": [],
@@ -83,7 +79,6 @@ def class_enrichment(graph, block, omega_scaled):
         incidence[index[u]] = 1.0
         incidence[index[v]] = -1.0
         coefficients = eigenvectors.T @ incidence
-
         rho = (
             eta
             / np.pi
@@ -96,20 +91,17 @@ def class_enrichment(graph, block, omega_scaled):
                 axis=0,
             )
         )
-
-        kind = edge_class(block[u], block[v])
-        class_profiles[kind].append(rho)
+        profiles[edge_class(block[u], block[v])].append(rho)
         all_profiles.append(rho)
 
     mean_all = np.mean(all_profiles, axis=0)
-
     return {
-        kind: np.mean(profiles, axis=0) / mean_all
-        for kind, profiles in class_profiles.items()
+        kind: np.mean(values, axis=0) / mean_all
+        for kind, values in profiles.items()
     }
 
 
-omega_scaled = np.linspace(0.0, 1.0, POINTS)
+omega_scaled = np.linspace(0.0, MAX_FREQUENCY, POINTS)
 enrichment = {
     "within group": [],
     "between groups": [],
@@ -119,119 +111,11 @@ enrichment = {
 for seed in range(REALIZATIONS):
     graph, block = sample_graph(seed)
     profiles = class_enrichment(graph, block, omega_scaled)
-
     for kind in enrichment:
         enrichment[kind].append(profiles[kind])
 
 
-# A smaller realization is used only to make the three edge classes explicit.
-# The ensemble statistics below use the parameters defined above.
-display_sizes = [10] * 4
-display_probabilities = np.full((4, 4), 0.008)
-np.fill_diagonal(display_probabilities, 0.50)
-display_probabilities[0, 1] = display_probabilities[1, 0] = 0.07
-display_probabilities[2, 3] = display_probabilities[3, 2] = 0.07
-graph = nx.stochastic_block_model(
-    display_sizes,
-    display_probabilities,
-    seed=SEED,
-)
-block = {
-    node: graph.nodes[node]["block"]
-    for node in graph.nodes()
-}
-
-# Add one connection at each hierarchical level if a random realization misses it.
-for left, right in ((0, 1), (2, 3), (1, 2)):
-    left_nodes = [node for node in graph if block[node] == left]
-    right_nodes = [node for node in graph if block[node] == right]
-    if not any(
-        graph.has_edge(u, v)
-        for u in left_nodes
-        for v in right_nodes
-    ):
-        graph.add_edge(left_nodes[0], right_nodes[0])
-
-fig, (ax_a, ax_b) = plt.subplots(
-    1,
-    2,
-    figsize=(6.6, 2.75),
-    gridspec_kw={"width_ratios": [0.90, 1.35]},
-)
-
-
-# ---------------------------------------------------------------------------
-# A. Hierarchical network
-# ---------------------------------------------------------------------------
-
-rng = np.random.default_rng(SEED)
-position = {}
-centers = {
-    0: (-0.95, 0.55),
-    1: (-0.95, -0.55),
-    2: (0.95, 0.55),
-    3: (0.95, -0.55),
-}
-for node in graph.nodes():
-    center = np.asarray(centers[block[node]])
-    position[node] = center + 0.23 * rng.normal(size=2)
-
-within_edges = []
-middle_edges = []
-outer_edges = []
-
-for u, v in graph.edges():
-    kind = edge_class(block[u], block[v])
-    if kind == "within group":
-        within_edges.append((u, v))
-    elif kind == "between groups":
-        middle_edges.append((u, v))
-    else:
-        outer_edges.append((u, v))
-
-nx.draw_networkx_edges(
-    graph,
-    position,
-    edgelist=within_edges,
-    edge_color=grey,
-    width=0.35,
-    alpha=0.45,
-    ax=ax_a,
-)
-nx.draw_networkx_edges(
-    graph,
-    position,
-    edgelist=middle_edges,
-    edge_color=orange,
-    width=0.75,
-    alpha=0.75,
-    ax=ax_a,
-)
-nx.draw_networkx_edges(
-    graph,
-    position,
-    edgelist=outer_edges,
-    edge_color=green,
-    width=0.9,
-    alpha=0.85,
-    ax=ax_a,
-)
-nx.draw_networkx_nodes(
-    graph,
-    position,
-    node_size=12,
-    node_color=dark,
-    linewidths=0,
-    ax=ax_a,
-)
-
-ax_a.set_axis_off()
-
-
-# ---------------------------------------------------------------------------
-# B. Ensemble edge-class enrichment
-# ---------------------------------------------------------------------------
-
+fig, ax = plt.subplots(1, 1, figsize=(4.35, 3.05))
 styles = {
     "within group": (blue, "within group"),
     "between groups": (orange, "between groups"),
@@ -241,72 +125,64 @@ styles = {
 for kind, (color, label) in styles.items():
     values = np.asarray(enrichment[kind])
     mean = values.mean(axis=0)
-    std = values.std(axis=0)
-
-    ax_b.plot(
+    sem = values.std(axis=0, ddof=1) / np.sqrt(REALIZATIONS)
+    ax.plot(
         omega_scaled,
         mean,
         color=color,
-        linewidth=1.7,
+        linewidth=1.55,
         label=label,
     )
-    ax_b.fill_between(
+    ax.fill_between(
         omega_scaled,
-        np.maximum(0.0, mean - std),
-        mean + std,
+        np.maximum(0.0, mean - sem),
+        mean + sem,
         color=color,
-        alpha=0.13,
+        alpha=0.16,
         linewidth=0,
     )
 
-ax_b.axhline(
+ax.axhline(
     1.0,
     color="black",
     linestyle=(0, (4, 3)),
-    linewidth=0.9,
+    linewidth=0.8,
 )
-
-ax_b.set_xlim(0.0, 1.0)
-ax_b.set_ylim(0.55, 2.65)
-ax_b.set_xticks([0.0, 0.25, 0.5, 0.75, 1.0])
-ax_b.set_xlabel(r"$\Omega/\lambda_{\max}$")
-ax_b.set_ylabel(r"$\langle\rho_e\rangle_{\rm class}/\langle\rho_e\rangle$")
-ax_b.tick_params(direction="in", top=True, right=True)
-ax_b.legend(
+ax.set_xlim(0.0, MAX_FREQUENCY)
+ax.set_ylim(0.55, 4.7)
+ax.set_xticks([0.0, 0.1, 0.2, 0.3, 0.4, 0.5])
+ax.set_yticks([1, 2, 3, 4])
+ax.set_xlabel(r"$\Omega/\lambda_{\max}$")
+ax.set_ylabel(r"$\langle\rho_e\rangle_{\rm class}/\langle\rho_e\rangle$")
+ax.tick_params(direction="in", top=True, right=True)
+ax.legend(
     loc="upper right",
-    fontsize=8.2,
+    fontsize=8.3,
     frameon=False,
+    handlelength=2.8,
 )
-for spine in ax_b.spines.values():
+for spine in ax.spines.values():
     spine.set_linewidth(0.8)
 
-
-for label, ax in zip(("a", "b"), (ax_a, ax_b)):
-    ax.text(
-        -0.03,
-        1.01,
-        label,
-        fontsize=13,
-        fontweight="bold",
-        ha="left",
-        va="bottom",
-        transform=ax.transAxes,
-        fontname="DejaVu Sans",
-    )
-
-
 fig.subplots_adjust(
-    left=0.025,
-    right=0.985,
-    bottom=0.21,
-    top=0.94,
-    wspace=0.26,
+    left=0.16,
+    right=0.97,
+    bottom=0.17,
+    top=0.96,
 )
 
 root = Path(__file__).resolve().parents[1]
 figure_dir = root / "paper" / "figures"
 figure_dir.mkdir(parents=True, exist_ok=True)
-
-fig.savefig(figure_dir / "fig2_hierarchy.pdf")
-fig.savefig(figure_dir / "fig2_hierarchy.png", dpi=300)
+fig.savefig(
+    figure_dir / "fig2_hierarchy.pdf",
+    bbox_inches="tight",
+    pad_inches=0.03,
+)
+fig.savefig(
+    figure_dir / "fig2_hierarchy.png",
+    dpi=300,
+    bbox_inches="tight",
+    pad_inches=0.03,
+)
 print(f"Saved figure to {figure_dir / 'fig2_hierarchy.pdf'}")
