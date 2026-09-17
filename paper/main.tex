@@ -121,7 +121,7 @@ Therefore, when evaluated at the endpoints of an edge, the frequency-resolved di
 \begin{figure}[H]
 \centering
 \includegraphics[width=\linewidth]{fig1_edge_spectra.pdf}
-\caption{Edge spectral fingerprints in a barbell graph. (a) Two cliques connected by a single bridge edge. (b) Smoothed edge spectral density for the bridge and for the mean over within-clique edges, with $\eta=0.035\lambda_{\max}$. Short marks along the horizontal axis indicate the nonzero Laplacian eigenvalues. The two edge classes place their spectral weight in different parts of the spectrum.}
+\caption{Frequency-resolved edge importance in one realization of a hierarchical stochastic block model. The network contains four groups, arranged into two supergroups, with $p_{\rm in}=0.55$, $p_{\rm mid}=0.08$, and $p_{\rm out}=0.015$. Each panel highlights the $5\%$ of edges with largest $\rho_e(\Omega,\eta)$ for the indicated frequency, with $\eta=0.03\lambda_{\max}$. Low frequencies select mainly edges between supergroups, intermediate frequencies select edges between groups inside a supergroup, and higher frequencies select edges inside the groups.}
 \label{fig:edge-spectra}
 \end{figure}
 
@@ -209,12 +209,12 @@ The narrow-band limit is also well defined when an eigenvalue is degenerate. Let
 \end{equation}
 The right-hand side is the spectral weight of the edge-incidence direction in that eigenspace. Therefore, the contribution of an edge to a particular graph frequency can be defined without choosing an arbitrary basis inside a degenerate eigenspace.
 
-Figure~\ref{fig:hierarchy} shows the same quantity in a network with two structural scales. For each frequency we compare the mean edge density of a structural class with the mean over all edges. Values above one indicate that the corresponding class is overrepresented around that part of the spectrum.
+Figure~\ref{fig:hierarchy} quantifies this separation over an ensemble of hierarchical networks. For each frequency we compare the mean edge density of a structural class with the mean over all edges. Values above one indicate that the corresponding class is overrepresented around that part of the spectrum.
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=\linewidth]{fig2_hierarchy.pdf}
-\caption{Frequency-dependent structural role in a hierarchical stochastic block model. (a) Representative network with within-group edges in gray, edges joining groups inside the same supergroup in orange, and edges joining different supergroups in green. (b) Mean spectral-density enrichment of the three edge classes over $30$ independent realizations. Shaded regions show one standard deviation and the dashed line marks the network average. Different structural edge classes are selected at different parts of the spectrum.}
+\includegraphics[width=0.72\linewidth]{fig2_hierarchy.pdf}
+\caption{Mean spectral-density enrichment of three structural edge classes over $50$ independent realizations of the hierarchical stochastic block model used in Fig.~\ref{fig:edge-spectra}. Shaded regions show one standard error of the mean and the dashed line marks the network average. Edges connecting the two supergroups are concentrated at the lowest frequencies, while edges joining groups inside a supergroup peak at a higher spectral scale.}
 \label{fig:hierarchy}
 \end{figure}
 
@@ -263,7 +263,7 @@ For $w_e>0$, $0<\Delta_e N_{\Omega,\eta}<1$. Equation~\eqref{eq:sensitivity} is 
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.70\linewidth]{fig3_shift.pdf}
-\caption{Finite spectral shift produced by deleting two edges of the barbell graph in Fig.~\ref{fig:edge-spectra}. Solid curves show Eq.~\eqref{eq:deletion-shift}; open markers are obtained by explicitly deleting the edge, recomputing the Laplacian spectrum, and evaluating the smoothed counting function. The bridge and a representative within-clique edge modify different spectral regions.}
+\caption{Finite spectral shift produced by deleting a bridge edge and a representative within-clique edge of a barbell graph. Solid curves show Eq.~\eqref{eq:deletion-shift}; open markers are obtained by explicitly deleting the edge, recomputing the Laplacian spectrum, and evaluating the smoothed counting function. The direct calculation and the rank-one expression coincide, while the two edge types modify different spectral regions.}
 \label{fig:finite-shift}
 \end{figure}
 
